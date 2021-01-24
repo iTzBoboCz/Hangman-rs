@@ -1,7 +1,7 @@
+use std::io::{self, Write, BufRead, prelude::*};
+use std::fmt;
 use std::fs::File;
-use std::io::{self, BufRead};
 use std::path::Path;
-use std::io::prelude::*;
 use std::process;
 use ansi_term::Colour::{Green, Yellow, Red};
 
@@ -74,4 +74,17 @@ fn check_input_file() {
       line_number = line_number + 1;
     }
   }
+}
+
+// https://users.rust-lang.org/t/why-is-it-so-difficult-to-get-user-input-in-rust/27444/3
+fn input(message: &'_ impl fmt::Display) -> String
+{
+  let mut ret = String::new();
+
+  print!("{}", message);
+  // stdout is line-buffered (and print doesn't emit a newline)
+  io::Write::flush(&mut io::stdout()).expect("[ERROR] flush failed!");
+
+  io::stdin().read_line(&mut ret).expect("[ERROR] Failed to read from stdin");
+  ret
 }
