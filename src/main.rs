@@ -3,6 +3,7 @@ use std::io::{self, BufRead};
 use std::path::Path;
 use std::io::prelude::*;
 use std::process;
+use ansi_term::Colour::{Green, Yellow, Red};
 
 #[allow(dead_code)]
 enum Difficulty {
@@ -47,25 +48,30 @@ where P: AsRef<Path>, {
 
 fn check_input_file() {
   let filename: &str = "words.txt";
+  
+  // false => permission error, doesn't exist
+  if !Path::new(filename).exists() {
+    println!("{}", Yellow.paint("The input file doesnt exist, attempting to create one!"));
+
+    if let Ok(result) = create_default_file(filename) {
+      println!("Matched {:?}!", result);
+      println!("{}", Green.paint("Done!"));
+    } else {
+      println!("{}", Red.paint("We were not able to create an input file.\nThough, you may create it by yourself."));
+      process::exit(1);
+    }
+  }
+
   // someone will probably have more than 255 words, so u16 is better
   let mut line_number: u16 = 0;
+
   if let Ok(lines) = read_lines(filename) {
     // Consumes the iterator, returns an (Optional) String
     for line in lines {
       if let Ok(data) = line {
-          println!("{0}: {1}", line_number, data);
+        println!("{0}: {1}", line_number, data);
       }
       line_number = line_number + 1;
-    }
-  } else {
-    println!("The input file doesnt exist, attempting to create one!");
-
-    if let Ok(result) = create_default_file(filename) {
-      println!("Matched {:?}!", result);
-      // println!("Done!");
-    } else {
-      println!("We were not able to create an input file.\nThough, you may create it by yourself.");
-      process::exit(1);
     }
   }
 }
