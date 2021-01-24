@@ -51,13 +51,13 @@ fn check_input_file() {
   
   // false => permission error, doesn't exist
   if !Path::new(filename).exists() {
-    println!("{}", Yellow.paint("The input file doesnt exist, attempting to create one!"));
+    println!("[INFO] {}", Yellow.paint("The input file doesnt exist, attempting to create one!"));
 
     if let Ok(result) = create_default_file(filename) {
       println!("Matched {:?}!", result);
-      println!("{}", Green.paint("Done!"));
+      println!("[INFO] {}", Green.paint("Done!"));
     } else {
-      println!("{}", Red.paint("We were not able to create an input file.\nThough, you may create it by yourself."));
+      println!("[INFO] {}", Red.paint("We were not able to create an input file.\nThough, you may create it by yourself."));
       process::exit(1);
     }
   }
