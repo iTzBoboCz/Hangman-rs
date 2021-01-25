@@ -1,9 +1,10 @@
-use std::io::{self, Write, BufRead, prelude::*};
+use std::io::{ self, Write, BufRead, BufReader };
+use std::str;
 use std::fmt;
 use std::fs::File;
 use std::path::Path;
 use std::process;
-use ansi_term::Colour::{Green, Yellow, Red};
+use ansi_term::Colour::{ Green, Yellow, Red };
 
 #[allow(dead_code)]
 enum Difficulty {
@@ -19,7 +20,16 @@ enum Type {
 }
 
 fn main() {
-  check_input_file();
+  let words = load_input_file();
+  
+  // default to 5 lives
+  let lives: usize = 5;
+  
+  for word in words {
+    let guessed: Vec<char>;
+
+    game_screen(&word, lives, guessed);
+  }
 }
 
 fn create_default_file(filename: &str) -> std::io::Result<()> {
@@ -40,15 +50,22 @@ fn create_default_file(filename: &str) -> std::io::Result<()> {
     Ok(())
 }
 
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where P: AsRef<Path>, {
-  let file = File::open(filename)?;
-  Ok(io::BufReader::new(file).lines())
+fn read_lines(filename: impl AsRef<Path>) -> Vec<String> {
+  let file = File::open(filename).expect("no such file");
+  let buf = BufReader::new(file);
+  buf.lines()
+    .map(|l| l.expect("Could not parse line"))
+    .collect()
 }
 
-fn check_input_file() {
+fn load_input_file() -> Vec<String> {
   let filename: &str = "words.txt";
-  
+
+  check_input_file(filename);
+  read_lines(filename)
+}
+
+fn check_input_file(filename: &str) {
   // false => permission error, doesn't exist
   if !Path::new(filename).exists() {
     println!("[INFO] {}", Yellow.paint("The input file doesn't exist, attempting to create one!"));
@@ -59,19 +76,6 @@ fn check_input_file() {
     } else {
       println!("[INFO] {}", Red.paint("We were not able to create an input file.\nThough, you may create it by yourself."));
       process::exit(1);
-    }
-  }
-
-  // someone will probably have more than 255 words, so u16 is better
-  let mut line_number: u16 = 0;
-
-  if let Ok(lines) = read_lines(filename) {
-    // Consumes the iterator, returns an (Optional) String
-    for line in lines {
-      if let Ok(data) = line {
-        println!("{0}: {1}", line_number, data);
-      }
-      line_number = line_number + 1;
     }
   }
 }
