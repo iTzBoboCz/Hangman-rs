@@ -26,9 +26,7 @@ fn main() {
   let lives: usize = 5;
   
   for word in words {
-    let guessed: Vec<char>;
-
-    game_screen(&word, lives, guessed);
+    game_screen(&word, lives);
   }
 }
 
@@ -101,36 +99,39 @@ fn clear() {
   print!("\x1B[2J\x1B[1;1H");
 }
 
-fn game_screen(word: &str, lives: usize, guessed: Vec<char>) {
+fn game_screen(word: &str, lives: usize) {
+  let guessed: String = String::new();
+  
   loop {
     clear();
-  
+
     println!("{}", str::repeat("♥", lives));
     print_hangman(lives);  
-    print_word(word, guessed);
+    let output = output_word(word, &guessed);
 
-
+    if output == word {
+      break;
+    } else {
+      println!("{}", output);
+    }
+    // check if is one letter and guessed.append(input)
+    let test = input(&": ");
+    println!("{}", test);
   }
 }
 
-fn print_word(word: &str, guessed: Vec<char>) {
-  let mut output = String::new();
+fn output_word(word: &str, guessed: &str) -> String {
+  let mut output = String::from("");
 
   for letter in word.chars() {
-    if guessed.contains(&letter) {
+    if guessed.contains(letter) || !letter.is_alphabetic() {
       output += &String::from(letter);
-    } else if !letter.is_alphabetic() {
-
     } else {
       output += "_";
     }
   }
 
-  if output == word {
-
-  } else {
-    println!("{}", output);
-  }
+  output
 }
 
 fn print_hangman(lives: usize) {
