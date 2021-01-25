@@ -96,3 +96,103 @@ fn input(message: &'_ impl fmt::Display) -> String
   
   ret
 }
+
+fn clear() {
+  print!("\x1B[2J\x1B[1;1H");
+}
+
+fn game_screen(word: &str, lives: usize, guessed: Vec<char>) {
+  loop {
+    clear();
+  
+    println!("{}", str::repeat("♥", lives));
+    print_hangman(lives);  
+    print_word(word, guessed);
+
+
+  }
+}
+
+fn print_word(word: &str, guessed: Vec<char>) {
+  let mut output = String::new();
+
+  for letter in word.chars() {
+    if guessed.contains(&letter) {
+      output += &String::from(letter);
+    } else if !letter.is_alphabetic() {
+
+    } else {
+      output += "_";
+    }
+  }
+
+  if output == word {
+
+  } else {
+    println!("{}", output);
+  }
+}
+
+fn print_hangman(lives: usize) {
+  match lives {
+    0 => {
+      println!(" _________   ");
+      println!("|         |  ");
+      println!("|         XO ");
+      println!("|        /|\\ ");
+      println!("|        / \\ ");
+      println!("|            ");
+      println!("|            ");
+    },
+
+    1 => {
+      println!(" _________   ");
+      println!("|         |  ");
+      println!("|         O  ");
+      println!("|        /|\\ ");
+      println!("|        / \\ ");
+      println!("|        ||| ");
+      println!("|        ||| ");
+    },
+
+    2 => {
+      println!(" _________   ");
+      println!("|            ");
+      println!("|         O  ");
+      println!("|        /|\\ ");
+      println!("|        / \\ ");
+      println!("|        ||| ");
+      println!("|        ||| ");
+    },
+
+    3 => {
+      println!(" _________   ");
+      println!("|            ");
+      println!("|            ");
+      println!("|         O  ");
+      println!("|        /|\\ ");
+      println!("|        / \\ ");
+      println!("|        ||| ");
+    },
+
+    4 => {
+      println!(" _________   ");
+      println!("|            ");
+      println!("|            ");
+      println!("|            ");
+      println!("|         O  ");
+      println!("|        /|\\ ");
+      println!("|        / \\ ");
+    },
+
+    _ => {
+      println!("             ");
+      println!("             ");
+      println!("             ");
+      println!("             ");
+      println!("          O  ");
+      println!("         /|\\ ");
+      println!("         / \\ ");
+    },
+  }
+}
