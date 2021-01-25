@@ -79,12 +79,16 @@ fn check_input_file() {
 // https://users.rust-lang.org/t/why-is-it-so-difficult-to-get-user-input-in-rust/27444/3
 fn input(message: &'_ impl fmt::Display) -> String
 {
-  let mut ret = String::new();
+  let mut string = String::new();
 
   print!("{}", message);
   // stdout is line-buffered (and print doesn't emit a newline)
-  io::Write::flush(&mut io::stdout()).expect("[ERROR] flush failed!");
+  io::Write::flush(&mut io::stdout()).expect("[ERROR] Flush failed!");
 
-  io::stdin().read_line(&mut ret).expect("[ERROR] Failed to read from stdin");
+  io::stdin().read_line(&mut string).expect("[ERROR] Failed to read from stdin");
+
+  // remove new line at the end
+  let ret = String::from(string.trim());
+  
   ret
 }
