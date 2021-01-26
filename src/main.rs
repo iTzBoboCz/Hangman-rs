@@ -4,7 +4,11 @@ use std::fmt;
 use std::fs::File;
 use std::path::Path;
 use std::process;
+use std::thread;
+use termion::{ raw::IntoRawMode, input::TermRead };
+use std::time::Duration;
 use ansi_term::Colour::{ Green, Yellow, Red };
+use stringsort::insertsort;
 
 #[allow(dead_code)]
 enum Difficulty {
@@ -19,14 +23,24 @@ enum Type {
   Sentences
 }
 
+struct GameData {
+  won: usize,
+  lost: usize
+}
+
 fn main() {
   let words = load_input_file();
-  
+
   // default to 5 lives
   let lives: usize = 5;
+
+  let mut gamedata: GameData = GameData {
+    won: 0,
+    lost: 0
+  };
   
   for word in words {
-    game_screen(&word, lives);
+    game_screen(&word, lives, &mut gamedata);
   }
 }
 
@@ -79,8 +93,7 @@ fn check_input_file(filename: &str) {
 }
 
 // https://users.rust-lang.org/t/why-is-it-so-difficult-to-get-user-input-in-rust/27444/3
-fn input(message: &'_ impl fmt::Display) -> String
-{
+fn input(message: &'_ impl fmt::Display) -> String {
   let mut string = String::new();
 
   print!("{}", message);
@@ -95,28 +108,89 @@ fn input(message: &'_ impl fmt::Display) -> String
   ret
 }
 
+fn input_char(message: &str, guessed: String) -> char {
+  print!("{}", message);
+  // stdout is line-buffered (and print doesn't emit a newline)
+  io::Write::flush(&mut io::stdout()).expect("[ERROR] Flush failed!");
+
+  let terminal = io::stdout().into_raw_mode();
+  let stdout = terminal.unwrap();
+
+  // Use asynchronous stdin
+  let mut stdin = termion::async_stdin().keys();
+  let s: char;
+
+  loop {
+    // Read input (if any)
+    let input = stdin.next();
+
+    // If a key was pressed
+    if let Some(Ok(key)) = input {
+      match key {
+        // Exit if 'ctrl + c' is pressed
+        termion::event::Key::Ctrl('c') => {
+          s = '\0';
+          break;
+        },
+
+        // Else print the pressed key
+        _ => {
+          if let termion::event::Key::Char(k) = key {
+            if !guessed.contains(k) {
+              s = k;
+              stdout.lock().flush().unwrap();
+              break;
+            }
+          }
+        }
+      }
+    }
+    thread::sleep(Duration::from_millis(0));
+  }
+
+  if s == '\0' {
+    println!("\nExitting!");
+    process::exit(1);
+  }
+
+  s
+}
+
 fn clear() {
   print!("\x1B[2J\x1B[1;1H");
 }
 
-fn game_screen(word: &str, lives: usize) {
-  let guessed: String = String::new();
+fn game_screen(word: &str, mut lives: usize, gamedata: &mut GameData) {
+  let mut guessed: String = String::new();
+  let mut guess: char;
+  // let mut info: String = String::from("");
   
   loop {
     clear();
 
+    // println!("{}", info);
+    println!("won: {0} | lost: {1}", gamedata.won, gamedata.lost);
     println!("{}", str::repeat("♥", lives));
-    print_hangman(lives);  
+    print_hangman(lives);
+    println!("guessed: {}\n", insertsort(&guessed));
     let output = output_word(word, &guessed);
 
+    println!("{}", output);
+
     if output == word {
+      gamedata.won += 1;
       break;
-    } else {
-      println!("{}", output);
+    } else if lives == 0 {
+      gamedata.lost += 1;
+      break;
     }
+
     // check if is one letter and guessed.append(input)
-    let test = input(&": ");
-    println!("{}", test);
+    guess = input_char(&": ", String::from(&guessed));
+    if !word.contains(guess) {
+      lives -= 1;
+    }
+    guessed.push(guess);
   }
 }
 

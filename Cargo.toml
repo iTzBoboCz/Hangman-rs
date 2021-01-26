@@ -8,3 +8,5 @@ edition = "2018"
 
 [dependencies]
 ansi_term = "0.12.1"
+termion = "1.5.5"
+stringsort = "2.0.0"
