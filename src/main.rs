@@ -93,6 +93,7 @@ fn check_input_file(filename: &str) {
 }
 
 // https://users.rust-lang.org/t/why-is-it-so-difficult-to-get-user-input-in-rust/27444/3
+#[allow(dead_code)]
 fn input(message: &'_ impl fmt::Display) -> String {
   let mut string = String::new();
 
